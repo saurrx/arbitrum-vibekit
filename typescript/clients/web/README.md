@@ -54,3 +54,70 @@ pnpm dev
 ### 3. Interact with Your Agent
 
 Navigate to [http://localhost:3000](http://localhost:3000) in your browser to start chatting with your agent.
+
+## VFD Persistence API
+
+The VFD Persistence API provides read/write access to the agent configuration workspace.
+
+### GET /api/vfd/config/load
+
+Loads the entire configuration workspace.
+
+**Request:**
+```bash
+curl http://localhost:3000/api/vfd/config/load
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "agent": {"frontmatter": {"card": {"name": "..."}}, "body": "..."},
+    "manifest": {"skills": ["./skills/general-assistant.md"]},
+    "skills": [{"id": "general-assistant", "path": "skills/general-assistant.md"}],
+    "mcp": {"mcpServers": {...}},
+    "workflow": {"workflows": []},
+    "workspaceVersion": "sha256:abc..."
+  },
+  "validationErrors": null
+}
+```
+
+### POST /api/vfd/config/save
+
+Saves the configuration workspace. Validates all schemas before persisting.
+
+**Request:**
+```bash
+curl -X POST http://localhost:3000/api/vfd/config/save \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent": {...},
+    "manifest": {...},
+    "skills": [...],
+    "mcp": {...},
+    "workflow": {...},
+    "expectedWorkspaceVersion": "sha256:abc..."
+  }'
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "workspaceVersion": "sha256:def..."
+}
+```
+
+**Response (400) - Validation Error:**
+```json
+{
+  "success": false,
+  "validationErrors": [...]
+}
+```
+
+### Environment Variables
+
+- `VFD_CONFIG_DIR` — Path to the config workspace (defaults to `config/vfd/`)
